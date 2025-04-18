@@ -1,0 +1,13 @@
+fastapi
+uvicorn[standard]
+sqlalchemy
+pydantic[email]
+python-dotenv
+passlib[bcrypt]
+python-jose[cryptography]
+jinja2
+psycopg2-binary
+alembic
+python-multipart
+phonenumbers
+apscheduler
