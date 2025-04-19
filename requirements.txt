@@ -11,3 +11,9 @@ alembic
 python-multipart
 phonenumbers
 apscheduler
+pandas
+openpyxl
+xlsxwriter
+matplotlib
+seaborn
+reportlab

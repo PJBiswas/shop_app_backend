@@ -32,6 +32,7 @@ app.include_router(products.router, prefix="/products", tags=["Products"])
 app.include_router(reports.router, prefix="/reports", tags=["Reports"])
 app.include_router(purchase.router, prefix="/purchase", tags=["Purchase"])
 app.include_router(dashboard.router, prefix="/dashboard", tags=["Dashboard"])
+app.include_router(reports.router, prefix="/api", tags=["Reports"])
 
 
 def custom_openapi():
