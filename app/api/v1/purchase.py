@@ -1,9 +1,8 @@
-from typing import List
+from typing import List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException
-from fastapi import Query
-from sqlalchemy.orm import Session
-from sqlalchemy.orm import selectinload
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy import asc, desc
+from sqlalchemy.orm import Session, selectinload
 
 from app.core.deps import get_current_user
 from app.db.session import SessionLocal
@@ -46,15 +45,21 @@ def purchase_product(
 def get_all_orders(
         skip: int = Query(0, ge=0),
         limit: int = Query(10, le=100),
+        sort_by: Optional[str] = Query("created_at", enum=["created_at", "total_amount", "is_completed"]),
+        order: Optional[str] = Query("desc", enum=["asc", "desc"]),
         db: Session = Depends(get_db)
 ):
+    order_fn = asc if order == "asc" else desc
+    sort_column = getattr(PurchaseOrder, sort_by, PurchaseOrder.created_at)
+
     total = db.query(PurchaseOrder).count()
     orders = db.query(PurchaseOrder) \
         .options(
-        selectinload(PurchaseOrder.user),
-        selectinload(PurchaseOrder.installments_schedule),
-        selectinload(PurchaseOrder.product)  # ✅ Load product data
-    ) \
+            selectinload(PurchaseOrder.user),
+            selectinload(PurchaseOrder.installments_schedule),
+            selectinload(PurchaseOrder.product)
+        ) \
+        .order_by(order_fn(sort_column)) \
         .offset(skip) \
         .limit(limit) \
         .all()
