@@ -1,6 +1,5 @@
 from decimal import Decimal
-from typing import Optional
-from typing import List
+from typing import Optional, List
 from pydantic import BaseModel
 
 
@@ -19,15 +18,15 @@ class ProductUpdate(BaseModel):
 class ProductOut(ProductCreate):
     id: int
 
-    class Config:
-        orm_mode = True
-
-
+    model_config = {
+        "from_attributes": True
+    }
 
 
 class PaginatedProduct(BaseModel):
     total: int
     items: List[ProductOut]
 
-    class Config:
-        from_attributes = True
+    model_config = {
+        "from_attributes": True
+    }

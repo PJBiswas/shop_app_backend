@@ -1,15 +1,15 @@
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import asc, desc
 from sqlalchemy.orm import Session, selectinload
 
 from app.core.deps import get_current_user
 from app.db.session import SessionLocal
 from app.models.purchase_order import PurchaseOrder
 from app.models.user import User
-from app.schemas.purchase import PaginatedPurchaseOut
-from app.schemas.purchase import PurchaseRequest, PurchaseOut, PurchaseWithInstallmentsOut
+from app.schemas.purchase_base import PurchaseRequest
+from app.schemas.purchase_response import PaginatedPurchaseOut, PurchaseOut, PurchaseWithInstallmentsOut
+from app.services.purchase_query_service import get_admin_filtered_purchases
 from app.services.purchase_service import create_purchase
 
 router = APIRouter()
@@ -47,24 +47,23 @@ def get_all_orders(
         limit: int = Query(10, le=100),
         sort_by: Optional[str] = Query("created_at", enum=["created_at", "total_amount", "is_completed"]),
         order: Optional[str] = Query("desc", enum=["asc", "desc"]),
+        customer_name: Optional[str] = Query(None, description="Search by customer name"),
+        product_name: Optional[str] = Query(None, description="Search by product name"),
+        start_date: Optional[str] = Query(None, description="Start date in YYYY-MM-DD"),
+        end_date: Optional[str] = Query(None, description="End date in YYYY-MM-DD"),
         db: Session = Depends(get_db)
 ):
-    order_fn = asc if order == "asc" else desc
-    sort_column = getattr(PurchaseOrder, sort_by, PurchaseOrder.created_at)
-
-    total = db.query(PurchaseOrder).count()
-    orders = db.query(PurchaseOrder) \
-        .options(
-            selectinload(PurchaseOrder.user),
-            selectinload(PurchaseOrder.installments_schedule),
-            selectinload(PurchaseOrder.product)
-        ) \
-        .order_by(order_fn(sort_column)) \
-        .offset(skip) \
-        .limit(limit) \
-        .all()
-
-    return {"total": total, "items": orders}
+    return get_admin_filtered_purchases(
+        db=db,
+        skip=skip,
+        limit=limit,
+        sort_by=sort_by,
+        order=order,
+        customer_name=customer_name,
+        product_name=product_name,
+        start_date=start_date,
+        end_date=end_date
+    )
 
 
 @router.get("/my-purchases", response_model=List[PurchaseWithInstallmentsOut])

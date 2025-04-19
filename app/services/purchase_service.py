@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from app.models.installment_schedule import InstallmentSchedule
 from app.models.product import Product
 from app.models.purchase_order import PurchaseOrder
-from app.schemas.purchase import PurchaseRequest
+from app.schemas.purchase_base import PurchaseRequest
 
 
 def create_purchase(data: PurchaseRequest, user_id: int, db: Session):
